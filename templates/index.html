@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фільмові Рекомендації</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .container { max-width: 600px; margin: auto; }
+        input, button { margin: 5px; padding: 10px; }
+        .movies { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Система Рекомендацій Фільмів</h1>
+        <label for="user_id">Ваш ID користувача:</label>
+        <input type="number" id="user_id" placeholder="Введіть ID" required>
+        <button onclick="getRecommendations()">Отримати рекомендації</button>
+        
+        <h2>Додати фільм до переглянутих</h2>
+        <input type="text" id="movie_title" placeholder="Введіть назву фільму">
+        <button onclick="addMovie()">Додати</button>
+        
+        <h2>Рекомендовані фільми:</h2>
+        <div id="recommendations" class="movies"></div>
+    </div>
+    
+    <script>
+        async function getRecommendations() {
+            const userId = document.getElementById("user_id").value;
+            if (!userId) {
+                alert("Будь ласка, введіть ваш ID!");
+                return;
+            }
+            
+            const response = await fetch("/recommend_from_db", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_id: userId })
+            });
+            
+            const data = await response.json();
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            
+            document.getElementById("recommendations").innerHTML = data.recommendations.map(title => `<p>${title}</p>`).join("");
+        }
+        
+        async function addMovie() {
+    const userId = localStorage.getItem("user_id");
+    const movieTitle = document.getElementById("movie_title").value;
+    if (!userId || !movieTitle) {
+        alert("Введіть ID користувача та назву фільму!");
+        return;
+    }
+
+    const response = await fetch("/find_movie", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ movie_title: movieTitle })
+    });
+
+    const data = await response.json();
+    if (data.error) {
+        alert(data.error);
+        return;
+    }
+
+    await fetch("/watch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId, movie_id: data.movie_id })
+    });
+
+    alert("Фільм додано до переглянутих!");
+}
+      
+    </script>
+</body>
+</html>

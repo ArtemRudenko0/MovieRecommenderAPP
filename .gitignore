@@ -1,1 +1,5 @@
-.venv
+backend/.venv
+backend/models/nearest_neighbors.pkl
+backend/models/svd_model.pkl
+backend/models/tfidf.pkl
+backend/models/tfidf_matrix.pkl
